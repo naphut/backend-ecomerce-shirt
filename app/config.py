@@ -31,6 +31,9 @@ class Settings(BaseSettings):
         "https://*.onrender.com",  # Allow all Render frontend URLs
         "https://frontend-admin.onrender.com",  # Specific admin frontend
         "https://front-user.onrender.com",  # Specific user frontend
+        "https://*.vercel.app",  # Allow all Vercel frontend URLs
+        "https://frontend-admin-six-kohl.vercel.app",  # Specific admin frontend on Vercel
+        "https://front-user-steel.vercel.app",  # Specific user frontend on Vercel
     ]
     
     # File upload
