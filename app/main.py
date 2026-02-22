@@ -58,23 +58,6 @@ async def root():
         "version": "1.0.0"
     }
 
-@app.get("/api")
-async def api_root():
-    return {
-        "message": "Welcome to Lumina Shirts API",
-        "docs": "/api/docs",
-        "version": "1.0.0",
-        "endpoints": {
-            "products": "/api/products/",
-            "categories": "/api/categories/",
-            "auth": "/api/auth/",
-            "cart": "/api/cart/",
-            "orders": "/api/orders/",
-            "users": "/api/users/",
-            "reviews": "/api/reviews/"
-        }
-    }
-
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "environment": settings.ENVIRONMENT, "port": os.getenv("PORT", "8000")}
