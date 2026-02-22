@@ -26,17 +26,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3002",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        "https://your-frontend.vercel.app",  # ប្តូរទៅតាម URL frontend របស់អ្នក
     ]
-    
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    
-    # Email
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
     
     # File upload
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB

@@ -12,3 +12,4 @@ alembic==1.12.1
 bcrypt==4.0.1
 bakong-khqr==0.5.1
 Pillow==10.4.0
+gunicorn==21.2.0

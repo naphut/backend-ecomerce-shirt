@@ -22,7 +22,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """Hash a password using bcrypt"""
     try:
-        # bcrypt can only hash up to 72 bytes
         password_bytes = password.encode('utf-8')
         if len(password_bytes) > 72:
             password_bytes = password_bytes[:72]
@@ -32,7 +31,6 @@ def get_password_hash(password: str) -> str:
         return hashed.decode('utf-8')
     except Exception as e:
         print(f"Password hashing error: {e}")
-        # Fallback
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(password.encode('utf-8')[:72], salt)
         return hashed.decode('utf-8')

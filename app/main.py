@@ -5,7 +5,7 @@ from app.database import engine, Base
 from app.routers import (
     auth, products, categories, cart, 
     orders, wishlist, tracking, users, upload, 
-    mock_payment, admin, reviews  # <-- បន្ថែម reviews នៅទីនេះ
+    admin, reviews
 )
 from app.config import settings
 import os
@@ -24,18 +24,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:3002",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,14 +42,12 @@ app.include_router(tracking.router, prefix="/api/tracking", tags=["Tracking"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
-app.include_router(mock_payment.router, prefix="/api/payment", tags=["Payment"])
-app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])  # <-- បន្ថែមនេះ
+app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
 
-# Mount static files
+# Mount static files - សម្រាប់បង្ហាញរូបភាព
 static_dir = "static"
 os.makedirs(static_dir, exist_ok=True)
 os.makedirs(f"{static_dir}/uploads", exist_ok=True)
-os.makedirs(f"{static_dir}/qr_codes", exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 @app.get("/")
