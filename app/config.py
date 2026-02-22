@@ -34,6 +34,7 @@ class Settings(BaseSettings):
         "https://*.vercel.app",  # Allow all Vercel frontend URLs
         "https://frontend-admin-six-kohl.vercel.app",  # Specific admin frontend on Vercel
         "https://front-user-steel.vercel.app",  # Specific user frontend on Vercel
+        "https://frontend-admin-edad.vercel.app",  # New admin frontend on Vercel
     ]
     
     # File upload
