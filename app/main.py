@@ -45,7 +45,7 @@ app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
 
 # Mount static files - សម្រាប់បង្ហាញរូបភាព
-static_dir = "static"
+static_dir = os.getenv("STATIC_DIR", "static")
 os.makedirs(static_dir, exist_ok=True)
 os.makedirs(f"{static_dir}/uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
@@ -60,4 +60,8 @@ async def root():
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "environment": settings.ENVIRONMENT}
+    return {"status": "healthy", "environment": settings.ENVIRONMENT, "port": os.getenv("PORT", "8000")}
+
+@app.get("/health")
+async def health_check_simple():
+    return {"status": "ok"}

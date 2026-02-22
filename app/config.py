@@ -1,18 +1,19 @@
 from pydantic_settings import BaseSettings
 from typing import List
+import os
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "sqlite:///./lumina.db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./lumina.db")
     
     # JWT
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Environment
-    ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
     
     # CORS
     ALLOWED_ORIGINS: List[str] = [
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         "https://your-frontend.vercel.app",  # ប្តូរទៅតាម URL frontend របស់អ្នក
+        "https://*.onrender.com",  # Allow all Render frontend URLs
     ]
     
     # File upload

@@ -6,16 +6,19 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: SECRET_KEY
         value: your-secret-key-change-in-production
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
-        value: False
+        value: false
       - key: DATABASE_URL
         value: sqlite:///./lumina.db
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: 30
       - key: ALGORITHM
         value: HS256
+      - key: STATIC_DIR
+        value: static
