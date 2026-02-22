@@ -29,11 +29,23 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5174",
         "https://your-frontend.vercel.app",  # ប្តូរទៅតាម URL frontend របស់អ្នក
         "https://*.onrender.com",  # Allow all Render frontend URLs
+        "https://frontend-admin.onrender.com",  # Specific admin frontend
+        "https://front-user.onrender.com",  # Specific user frontend
     ]
     
     # File upload
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
     ALLOWED_EXTENSIONS: List[str] = [".jpg", ".jpeg", ".png", ".webp"]
+    
+    # Stripe (optional)
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    
+    # Email (optional)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
     
     class Config:
         env_file = ".env"
