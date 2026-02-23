@@ -5,7 +5,7 @@ from app.database import engine, Base
 from app.routers import (
     auth, products, categories, cart, 
     orders, wishlist, tracking, users, upload, 
-    admin, reviews
+    admin, reviews, payment, mock_payment
 )
 from app.config import settings
 import os
@@ -21,7 +21,7 @@ app = FastAPI(
     redoc_url="/api/redoc"
 )
 
-# CORS middleware
+# CORS middleware - ប្រើ settings.ALLOWED_ORIGINS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -43,6 +43,8 @@ app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Upload"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["Reviews"])
+app.include_router(payment.router, prefix="/api/payment", tags=["Payment"])
+app.include_router(mock_payment.router, prefix="/api/mock-payment", tags=["Mock Payment"])
 
 # Mount static files - សម្រាប់បង្ហាញរូបភាព
 static_dir = os.getenv("STATIC_DIR", "static")
@@ -55,12 +57,17 @@ async def root():
     return {
         "message": "Welcome to Lumina Shirts API",
         "docs": "/api/docs",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "environment": settings.ENVIRONMENT
     }
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "environment": settings.ENVIRONMENT, "port": os.getenv("PORT", "8000")}
+    return {
+        "status": "healthy", 
+        "environment": settings.ENVIRONMENT, 
+        "port": os.getenv("PORT", "8000")
+    }
 
 @app.get("/health")
 async def health_check_simple():

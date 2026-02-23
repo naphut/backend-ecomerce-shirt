@@ -1,33 +1,31 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.so
 .Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-*.db
-*.sqlite3
-
-# Environment
 .env
 .venv
-pip-log.txt
-pip-delete-this-directory.txt
+venv/
+ENV/
+env/
+dist/
+build/
+*.egg-info/
+
+# Database
+*.db
+*.sqlite3
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Uploads
-static/uploads/
+# Logs
+*.log

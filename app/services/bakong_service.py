@@ -1,206 +1,118 @@
-from bakong_khqr import KHQR
-from typing import Dict, Optional, List
+import json
+import base64
+import hashlib
+import time
+from typing import Optional, Dict, Any
 from datetime import datetime
-import os
+import requests
+from app.config import settings
 
-class BakongService:
+class MockBakongService:
+    """Mock Bakong service for development (bypasses real Bakong API)"""
+    
     def __init__(self):
-        # Bakong Token របស់អ្នក
-        self.token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiNGY3MmY0ZWVhYThkNDg5NCJ9LCJpYXQiOjE3NzE3MzE5NDgsImV4cCI6MTc3OTUwNzk0OH0.Xuijub0H_u4oZat1tQQdxX5anP_F_JwhZXU7lFLbanI"
-        self.bank_account = "ret_naphut@bkrt"  # Bakong ID របស់អ្នក
-        self.khqr = KHQR(self.token)
+        self.transactions = {}
+        self.merchant_id = "ret_naphut@bkrt"
+        self.phone_number = "+855972021149"
+        print("🚀 Using MOCK Bakong service - Bakong API is bypassed")
+        print(f"📱 Merchant ID: {self.merchant_id}")
+        print(f"📞 Phone: {self.phone_number}")
+    
+    def generate_qr(self, amount: float, currency: str = "USD", 
+                   merchant_name: str = "Lumina Shirts", 
+                   bill_number: Optional[str] = None) -> Dict[str, Any]:
+        """Generate mock QR code"""
+        timestamp = str(int(time.time()))
         
-        # រក្សាទុក transaction MD5 សម្រាប់ពិនិត្យស្ថានភាព
-        self.transactions = {}  # order_id -> md5
+        # Create a unique MD5 hash
+        md5_input = f"{amount}{currency}{timestamp}{bill_number}{self.merchant_id}"
+        md5 = hashlib.md5(md5_input.encode()).hexdigest()
         
-    def create_payment_qr(
-        self,
-        order_id: str,
-        amount: float,
-        currency: str = 'USD',
-        merchant_name: str = 'Lumina Shirts',
-        merchant_city: str = 'Phnom Penh',
-        store_label: str = 'Lumina Store',
-        phone_number: str = '85512345678',
-        bill_number: Optional[str] = None
-    ) -> Dict:
-        """
-        បង្កើត QR Code សម្រាប់ការទូទាត់
-        """
-        try:
-            # បង្កើត bill number បើមិនមាន
-            if not bill_number:
-                bill_number = f"LUM{order_id}{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            
-            # បង្កើត QR code
-            qr_data = self.khqr.create_qr(
-                bank_account=self.bank_account,
-                merchant_name=merchant_name,
-                merchant_city=merchant_city,
-                amount=amount,
-                currency=currency,
-                store_label=store_label,
-                phone_number=phone_number,
-                bill_number=bill_number,
-                terminal_label='Terminal-01',
-                static=False  # Dynamic QR for specific amount
-            )
-            
-            # បង្កើត MD5 hash
-            md5 = self.khqr.generate_md5(qr_data)
-            
-            # រក្សាទុក transaction
-            self.transactions[order_id] = {
-                'md5': md5,
-                'qr_data': qr_data,
-                'amount': amount,
-                'currency': currency,
-                'status': 'PENDING',
-                'created_at': datetime.now().isoformat()
-            }
-            
-            # បង្កើត deeplink
-            deeplink = self.khqr.generate_deeplink(
-                qr_data,
-                callback="lumina://payment/callback",  # Custom scheme របស់អ្នក
-                appIconUrl="https://your-domain.com/logo.png",
-                appName="Lumina Shirts"
-            )
-            
-            return {
-                'success': True,
-                'qr_data': qr_data,
-                'md5': md5,
-                'deeplink': deeplink,
-                'bill_number': bill_number,
-                'order_id': order_id
-            }
-            
-        except Exception as e:
-            return {
-                'success': False,
-                'error': str(e)
-            }
+        # Create mock QR string (simulating KHQR format)
+        qr_string = f"00020101021229180014{self.merchant_id}520459995802{currency}5909{merchant_name}6010Phnom Penh9917{timestamp}5411{int(amount*100)}6304{md5[:4]}"
+        
+        # Generate QR image URL using Google Charts
+        qr_image_url = f"https://chart.googleapis.com/chart?chs=256x256&cht=qr&chl={qr_string}"
+        
+        # Store transaction
+        self.transactions[md5] = {
+            "amount": amount,
+            "currency": currency,
+            "bill_number": bill_number,
+            "created_at": time.time(),
+            "status": "PENDING"
+        }
+        
+        print(f"✅ Mock QR generated for amount ${amount}")
+        print(f"🔑 MD5: {md5}")
+        
+        return {
+            "success": True,
+            "qr_string": qr_string,
+            "qr_image": qr_image_url,
+            "md5": md5,
+            "amount": amount,
+            "currency": currency,
+            "merchant_id": self.merchant_id,
+            "phone_number": self.phone_number,
+            "is_mock": True
+        }
     
-    def check_payment_status(self, order_id: str) -> Dict:
-        """
-        ពិនិត្យស្ថានភាពការទូទាត់
-        """
-        try:
-            if order_id not in self.transactions:
-                return {
-                    'success': False,
-                    'error': 'Transaction not found'
-                }
-            
-            md5 = self.transactions[order_id]['md5']
-            status = self.khqr.check_payment(md5)
-            
-            # ប្រសិនបើការទូទាត់បានសម្រេច
-            if status == "PAID":
-                # ទាញយកព័ត៌មានការទូទាត់
-                payment_info = self.khqr.get_payment(md5)
-                self.transactions[order_id]['status'] = 'PAID'
-                self.transactions[order_id]['payment_info'] = payment_info
-                
-                return {
-                    'success': True,
-                    'status': 'PAID',
-                    'payment_info': payment_info
-                }
-            else:
-                return {
-                    'success': True,
-                    'status': 'UNPAID'
-                }
-                
-        except Exception as e:
+    def check_payment(self, md5: str) -> Dict[str, Any]:
+        """Check mock payment status"""
+        if md5 not in self.transactions:
             return {
-                'success': False,
-                'error': str(e)
+                "success": False,
+                "error": "Transaction not found"
             }
+        
+        transaction = self.transactions[md5]
+        elapsed = time.time() - transaction["created_at"]
+        
+        # Auto-mark as PAID after 30 seconds for testing
+        if elapsed > 30:
+            transaction["status"] = "PAID"
+            print(f"✅ Payment completed for MD5: {md5[:8]}...")
+        else:
+            remaining = 30 - int(elapsed)
+            print(f"⏳ Payment pending for MD5: {md5[:8]}... ({remaining}s remaining)")
+        
+        return {
+            "success": True,
+            "status": transaction["status"],
+            "md5": md5,
+            "transaction_id": f"TXN-{md5[:8]}",
+            "amount": transaction["amount"],
+            "currency": transaction["currency"],
+            "is_mock": True
+        }
     
-    def check_bulk_payments(self, order_ids: List[str]) -> Dict:
-        """
-        ពិនិត្យស្ថានភាពការទូទាត់ច្រើនក្នុងពេលតែមួយ
-        """
-        try:
-            md5_list = []
-            order_map = {}
-            
-            for order_id in order_ids:
-                if order_id in self.transactions:
-                    md5 = self.transactions[order_id]['md5']
-                    md5_list.append(md5)
-                    order_map[md5] = order_id
-            
-            # ពិនិត្យក្នុង batch នៃ 50
-            paid_md5_list = []
-            for i in range(0, len(md5_list), 50):
-                batch = md5_list[i:i+50]
-                paid_batch = self.khqr.check_bulk_payments(batch)
-                paid_md5_list.extend(paid_batch)
-            
-            # បង្កើតលទ្ធផល
-            results = {}
-            for md5 in paid_md5_list:
-                order_id = order_map[md5]
-                results[order_id] = 'PAID'
-                
-                # ទាញយកព័ត៌មានការទូទាត់
-                payment_info = self.khqr.get_payment(md5)
-                self.transactions[order_id]['status'] = 'PAID'
-                self.transactions[order_id]['payment_info'] = payment_info
-            
+    def get_payment_info(self, md5: str) -> Dict[str, Any]:
+        """Get mock payment info"""
+        if md5 not in self.transactions:
             return {
-                'success': True,
-                'results': results
+                "success": False,
+                "error": "Transaction not found"
             }
-            
-        except Exception as e:
-            return {
-                'success': False,
-                'error': str(e)
-            }
-    
-    def generate_qr_image(self, order_id: str, output_path: Optional[str] = None) -> Dict:
-        """
-        បង្កើតរូបភាព QR Code
-        """
-        try:
-            if order_id not in self.transactions:
-                return {
-                    'success': False,
-                    'error': 'Transaction not found'
-                }
-            
-            qr_data = self.transactions[order_id]['qr_data']
-            
-            # បង្កើត directory សម្រាប់រក្សាទុករូបភាព QR
-            qr_dir = "static/qr_codes"
-            os.makedirs(qr_dir, exist_ok=True)
-            
-            # បង្កើតឈ្មោះឯកសារ
-            if not output_path:
-                output_path = f"{qr_dir}/{order_id}.png"
-            
-            # បង្កើតរូបភាព QR
-            image_path = self.khqr.qr_image(qr_data, output_path=output_path)
-            
-            # បង្កើត URL សម្រាប់ចូលមើលរូបភាព
-            url = f"/static/qr_codes/{order_id}.png"
-            
-            return {
-                'success': True,
-                'image_path': image_path,
-                'url': url
-            }
-            
-        except Exception as e:
-            return {
-                'success': False,
-                'error': str(e)
-            }
+        
+        transaction = self.transactions[md5]
+        
+        return {
+            "success": True,
+            "data": {
+                "md5": md5,
+                "amount": transaction["amount"],
+                "currency": transaction["currency"],
+                "status": transaction["status"],
+                "bill_number": transaction.get("bill_number"),
+                "created_at": datetime.fromtimestamp(transaction["created_at"]).isoformat(),
+                "merchant_id": self.merchant_id,
+                "phone_number": self.phone_number
+            },
+            "is_mock": True
+        }
 
-# Singleton instance
-bakong_service = BakongService()
+# Initialize Mock Bakong service (always use mock to bypass Bakong API)
+print("🚀 Initializing Mock Bakong service...")
+bakong_service = MockBakongService()
+print("✅ Mock Bakong service initialized successfully")
