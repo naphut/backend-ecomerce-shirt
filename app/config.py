@@ -15,26 +15,25 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
     
-    # CORS
+    # CORS - Only your specific frontend URLs
     ALLOWED_ORIGINS: List[str] = [
+        # Development
         "http://localhost:3000",
-        "http://localhost:3001",
+        "http://localhost:3001", 
         "http://localhost:3002",
+        "http://localhost:3003",
         "http://localhost:5173",
         "http://localhost:5174",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
         "http://127.0.0.1:3002",
+        "http://127.0.0.1:3003",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
-        "https://your-frontend.vercel.app",  # ប្តូរទៅតាម URL frontend របស់អ្នក
-        "https://*.onrender.com",  # Allow all Render frontend URLs
-        "https://frontend-admin.onrender.com",  # Specific admin frontend
-        "https://front-user.onrender.com",  # Specific user frontend
-        "https://*.vercel.app",  # Allow all Vercel frontend URLs
-        "https://frontend-admin-six-kohl.vercel.app",  # Specific admin frontend on Vercel
-        "https://front-user-steel.vercel.app",  # Specific user frontend on Vercel
-        "https://frontend-admin-edad.vercel.app",  # New admin frontend on Vercel
+        
+        # Production - Your specific frontend URLs
+        "https://frontend-admin-edad.vercel.app",
+        "https://front-user-steel.vercel.app",
     ]
     
     # File upload
